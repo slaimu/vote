@@ -6,7 +6,10 @@ var express = require('express'),
     swig = require('swig'),
     React = require('react'),
     Router = require('react-router'),
-    routes = require('./app/routes');
+    routes = require('./app/routes'),
+    server = require('http').createServer(app),
+    io = require('socket.io')(server),
+    onlineUsers = 0;
 
 
 app.set('port', process.env.PORT || 3000);
@@ -25,7 +28,24 @@ app.use(function(req, res) {
 });
 
 
+io.sockets.on('connection', function (socket) {
+  onlineUsers += 1;
 
-app.listen(app.get('port'), function () {
-  console.log('EXpress server listening on port:' + app.get('port'));
+  io.sockets.emit('onlineUsers', {onlineUsers: onlineUsers});
+
+  socket.on('disconnect', function () {
+    onlineUsers -= 1;
+    io.sockets.emit('onlineUsers', {onlineUsers: onlineUsers});
+  });
 });
+
+
+server.listen(app.get('port'), function () {
+  console.log('Express server listening on port ' + app.get('port'));
+});
+
+
+
+
+
+  
