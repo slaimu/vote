@@ -9,6 +9,9 @@ var express = require('express'),
     routes = require('./app/routes'),
     server = require('http').createServer(app),
     io = require('socket.io')(server),
+    mongoose = require('mongoose'),
+    Character = require('./models/character'),
+    config = require('./config'),
     onlineUsers = 0;
 
 
@@ -17,7 +20,10 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname, 'public')));
-
+mongoose.connect(config.database);
+mongoose.connection.on('error', function() {
+  console.info('Error: Could not connect to MongoDB');
+});
 
 app.use(function(req, res) {
   Router.run(routes, req.path, function(Handler) {
